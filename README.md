@@ -26,7 +26,7 @@ Kernel versions 3.x and above (Ubuntu 11.10 and newer) are also recommended.
 #### Pre-requirements ####
 
 - perl
-- acer_ec.pl (http://code.google.com/p/aceracpi/)
+- acer_ec.pl (see: http://code.google.com/p/aceracpi/wiki/EmbeddedController)
 - acers3fand
 - acers3fand_init
 
