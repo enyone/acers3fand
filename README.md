@@ -12,10 +12,6 @@ but will not remove the auto-start script so it is running again after bootup
 
 ----------------------------------------
 
-acers3fand is a script which controls your Acer Aspire S3 Ultrabook
-fan speed by cpu temperature. It is designed to work with Intel Core i5 CPU
-but might work with other cpus as well.
-
 For Ubuntu (Gnome) users we would also recommend using Jupiter indicator
 application (in addition with acers3fand) to manage cpu frequency
 and power stages to get lower temperatures and allow acers3fand to
