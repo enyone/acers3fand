@@ -1,0 +1,243 @@
+#!/bin/bash
+#
+# acers3fand - Rudimentary automatic fan control for noisy Acer Aspire S3 models
+#
+# Orginal author Rachel Greenham (for Acer Aspire One, ported from 0.07)
+# Author Juho Tykkälä from Enymind Oy (for S3)
+#
+ACERS3FAND_VERSION="0.04"
+# version 0.04 (2013-01-16)
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the
+# Enymind Oy, Ahdinkatu 26, 40700 Jyväskylä, Finland
+#
+# Feel free to send any confirmations of working or not with your hardware.
+# mail: enyone@enymind.fi
+#
+# To modify the parameters, create a file /etc/acers3fand.conf and add
+# these 6 lines into it:
+#
+# INTERVAL=5 # temperature poll interval in seconds
+# STARTTEMP=50 # temperature in C to start fan
+# MAXTEMP=65 # temperature in C to spin fan at max. speed
+# STARTRPM=99 # value (0-99) as lowest RPM you like (0 max. vs. 99 min.)
+# MAXRPM=0 # value (0-99) as highest RPM you like (0 max. vs. 99 min.)
+# RAMPUP=5 # increase this much RPM per. one degree C increase
+#
+
+
+LOGGER=$(which logger)
+if [ ! -x $LOGGER ] ; then
+	LOGGER="/usr/bin/logger"
+fi
+if [ ! -x $LOGGER ] ; then
+	echo "Warning, logger can't be found. Will log to stdout"
+	unset LOGGER
+fi
+
+LOGLEVEL="info"
+
+log() {
+	if [ ! -z "$LOGGER" ] ; then
+		$LOGGER -p daemon.$LOGLEVEL -t acers3fand "$@"
+	else
+		echo "$@"
+	fi
+}
+
+info() {
+	LOGLEVEL="info"
+	log "$@"
+}
+
+notice() {
+	LOGLEVEL="notice"
+	log "$@"
+}
+
+err() {
+	LOGLEVEL="err"
+	log "$@"
+}
+
+info "acers3fand $ACERS3FAND_VERSION starting"
+
+# if pgrep acers3fand  | grep -v $$ > /dev/null; then
+# 	info "acers3fand already running"
+# 	exit 0
+# fi
+
+ME=$(readlink -f $0)
+
+BIOS_VERSION_115="1.15"
+BIOS_VERSION_116="1.16"
+BIOS_VERSION_118="1.18"
+BIOS_VERSION_121="V1.21"
+
+BIOS_VERSION_DEFAULT=$BIOS_VERSION_115
+
+getBiosVersion() {
+	DMIDECODE=$(which dmidecode)
+	if [ -z $DMIDECODE ] ; then
+		info "Can't find dmidecode. Assuming bios $BIOS_VERSION_DEFAULT"
+		BIOS_VERSION=$BIOS_VERSION_DEFAULT
+	else
+		BIOS_VERSION=$($DMIDECODE -s bios-version)
+		info "Detected bios version $BIOS_VERSION"
+	fi
+}
+
+ACEREC=$(which acer_ec.pl)
+if [ -z $ACEREC ] ; then
+	ACEREC=$(dirname $ME)/acer_ec.pl
+fi
+
+if [ ! -r $ACEREC ] ; then
+	err "acer_ec.pl can't be found"
+	exit 1
+fi
+
+INTERVAL=5
+STARTTEMP=50
+MAXTEMP=65
+STARTRPM=99
+MAXRPM=0
+RAMPUP=5
+
+getBiosVersion
+
+if [ -r "/etc/acers3fand.conf" ] ; then
+	source "/etc/acers3fand.conf"
+fi
+
+case "$BIOS_VERSION" in
+	"${BIOS_VERSION_115}")
+		R_FAN="0x93"
+		R_SPEED="0x94"
+		R_TEMP="0xA8"
+		FAN_CMD_MANUAL="0x14"
+		FAN_CMD_AUTO="0x04"
+		;;
+	"${BIOS_VERSION_116}")
+		R_FAN="0x93"
+		R_SPEED="0x94"
+		R_TEMP="0xA8"
+		FAN_CMD_MANUAL="0x14"
+		FAN_CMD_AUTO="0x04"
+		;;
+	"${BIOS_VERSION_118}")
+		R_FAN="0x93"
+		R_SPEED="0x94"
+		R_TEMP="0xA8"
+		FAN_CMD_MANUAL="0x14"
+		FAN_CMD_AUTO="0x04"
+		;;
+	"${BIOS_VERSION_121}")
+		R_FAN="0x93"
+		R_SPEED="0x94"
+		R_TEMP="0xA8"
+		FAN_CMD_MANUAL="0x14"
+		FAN_CMD_AUTO="0x04"
+		;;
+	*)
+		err "Unsupported bios version ${BIOS_VERSION} found. Aborting."
+		exit 1
+	;;
+esac
+
+FAN_STATE_UNRECOGNIZED=0
+FAN_STATE_AUTO=1
+FAN_STATE_MANUAL=2
+FAN_STATE_NAMES=("Unrecognized" "Auto" "Manual")
+FAN_STATE_CMDS=("$FAN_CMD_MANUAL" "$FAN_CMD_AUTO" "$FAN_CMD_MANUAL")
+
+acer_ec() {
+	perl $ACEREC $@
+}
+
+getTemp() {
+	TEMP=$[$(acer_ec ?= $R_TEMP | cut -f 3 -d' ')]
+	notice "temp: $TEMP"
+}
+
+getRawFanState() {
+	RAW_FAN_STATE=$(acer_ec ?= $R_FAN | cut -f 3 -d' ')
+}
+
+getFanState() {
+	FAN_STATE=$FAN_STATE_UNRECOGNIZED
+	getRawFanState
+	if [ "$RAW_FAN_STATE" == "$FAN_CMD_MANUAL" ]; then
+		FAN_STATE=$FAN_STATE_MANUAL
+	else
+		let A="$RAW_FAN_STATE & 0x10" || true
+		if [ "$A == 0" ] ; then
+			# ASSUMPTION: All values with nybble 1==0 denote auto
+			FAN_STATE=$FAN_STATE_AUTO
+		fi
+	fi
+	notice "read fan state ${FAN_STATE_NAMES[$FAN_STATE]}"
+}
+
+setFan() {
+	notice "Set fan ${FAN_STATE_NAMES[$1]}"
+	acer_ec := $R_FAN ${FAN_STATE_CMDS[$1]} > /dev/null
+}
+
+setSpeed() {
+	notice "Set speed $1"
+	acer_ec := $R_SPEED $1 > /dev/null
+}
+
+govern() {
+trap "info exiting;setFan $FAN_STATE_AUTO; exit" INT TERM EXIT
+info "Starting to govern acer fan speed. Interval: $INTERVAL, start-temp: $STARTTEMP, max-temp: $MAXTEMP, start-rpm: $STARTRPM, max-rpm: $MAXRPM, ramp-up: $RAMPUP"
+setFan $FAN_STATE_MANUAL
+while true; do
+	getTemp
+	setFan $FAN_STATE_MANUAL
+	getFanState
+	notice "Raw fan state: $RAW_FAN_STATE, fan state: ${FAN_STATE_NAMES[$FAN_STATE]}, temp: $TEMP"
+	case "$FAN_STATE" in
+		$FAN_STATE_AUTO)
+			err "Somebody (maybe kernel) set fan to mode AUTO. Not me... Not fatal, but stuppid."
+			setFan $FAN_STATE_MANUAL
+			;;
+		$FAN_STATE_MANUAL)
+			if [ "$TEMP" -le "$STARTTEMP" ] ; then
+				setSpeed 0xFF
+			else 
+				if [ "$TEMP" -ge "$MAXTEMP" ] ; then
+					setSpeed $MAXRPM
+				else
+					B=$[ $STARTRPM - $[ $[ $TEMP - $STARTTEMP ] * $RAMPUP ] ]
+					setSpeed $B
+				fi
+			fi
+			;;
+		*)
+			# weird state. Let's turn it off,
+			# then decide next time around
+			info "Unexpected fan state $FAN_STATE"
+			setFan $FAN_STATE_AUTO
+			;;
+	esac
+	sleep $INTERVAL
+done
+}
+
+set -e
+
+govern &
+
