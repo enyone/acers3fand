@@ -40,6 +40,3 @@ Installation:
 Usage:
 - This is maintainance-free appplication, should work out of the box
 - See acers3fand -file for changelog and limitations (bios versions etc.)
-
-Author:
-Juho Tykkälä (Enymind Oy) <enyone@enymind.fi>
