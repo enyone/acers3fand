@@ -32,12 +32,12 @@ Kernel versions 3.x and above (Ubuntu 11.10 and newer) are also recommended.
 
 #### Installation:####
 
-- Copy acer_ec.pl and acers3fand to /usr/local/bin/
+- Copy `acer_ec.pl` and acers3fand to `/usr/local/bin/`
 - Make sure both are executable (chmod +x) and owned by the root user
-- Copy acers3fand_init to /etc/init.d/
+- Copy `acers3fand_init` to `/etc/init.d/`
 - Make sure it is executable (chmod +x) and owned by the root user
-- Run: sudo ln -s /etc/init.d/acers3fand_init /etc/rc2.d/S99acers3fand
-- Reboot and check /var/log/syslog for lines "acers3fand"
+- Run: `sudo ln -s /etc/init.d/acers3fand_init /etc/rc2.d/S99acers3fand`
+- Reboot and check `/var/log/syslog` for lines "acers3fand"
 
 #### Usage ####
 
