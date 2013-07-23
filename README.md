@@ -39,3 +39,10 @@ Kernel versions 3.x and above (Ubuntu 11.10 and newer) are also recommended.
 
 - This is maintainance-free appplication, should work out of the box
 - See acers3fand -file for changelog and limitations (bios versions etc.)
+
+### Credits ###
+
+acer_ec.pl
+- Copyright (C) 2007 Michael Kurz michi.kurz (at) googlemail.com
+- Copyright (C) 2007 Petr Tomasek tomasek (#) etf,cuni,cz
+- Copyright (C) 2007 Carlos Corbacho cathectic (at) gmail.com
