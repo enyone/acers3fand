@@ -47,8 +47,11 @@ acer_ec.pl
 - Copyright (C) 2007 Petr Tomasek tomasek (#) etf,cuni,cz
 - Copyright (C) 2007 Carlos Corbacho cathectic (at) gmail.com
 
-acerfand
+acerfand (original version)
 - Rachel Greenham (for Acer Aspire One)
 
-acerfand_init
+acerfand_init (original version)
 - Cliff L. Biffle <cbiffle@gmail.com>
+
+acers3fand & acers3fand_init
+- me
