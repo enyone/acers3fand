@@ -42,16 +42,16 @@ Kernel versions 3.x and above (Ubuntu 11.10 and newer) are also recommended.
 
 ### Credits ###
 
-acer_ec.pl
+#### acer_ec.pl ####
 - Copyright (C) 2007 Michael Kurz michi.kurz (at) googlemail.com
 - Copyright (C) 2007 Petr Tomasek tomasek (#) etf,cuni,cz
 - Copyright (C) 2007 Carlos Corbacho cathectic (at) gmail.com
 
-acerfand (original version)
+#### acerfand (original version) ####
 - Rachel Greenham (for Acer Aspire One)
 
-acerfand_init (original version)
+#### acerfand_init (original version) ####
 - Cliff L. Biffle <cbiffle@gmail.com>
 
-acers3fand & acers3fand_init
+#### acers3fand & acers3fand_init ####
 - me
