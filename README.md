@@ -46,3 +46,6 @@ acer_ec.pl
 - Copyright (C) 2007 Michael Kurz michi.kurz (at) googlemail.com
 - Copyright (C) 2007 Petr Tomasek tomasek (#) etf,cuni,cz
 - Copyright (C) 2007 Carlos Corbacho cathectic (at) gmail.com
+
+acerfand
+- Rachel Greenham (for Acer Aspire One)
