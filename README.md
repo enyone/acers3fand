@@ -49,3 +49,6 @@ acer_ec.pl
 
 acerfand
 - Rachel Greenham (for Acer Aspire One)
+
+acerfand_init
+- Cliff L. Biffle <cbiffle@gmail.com>
